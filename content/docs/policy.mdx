@@ -1,0 +1,57 @@
+---
+title: Policy Configuration
+description: A single YAML file controls what gets blocked, masked, or allowed. Per entity type. Reloaded on restart.
+---
+
+<Callout type="warn">
+Policy enforcement requires the detection engine, which is not yet publicly available. This page documents how policy will work once it ships. You can prepare your `policy.yaml` now. The proxy loads it on startup and will enforce it automatically when the engine is connected.
+</Callout>
+
+The policy file is the heart of PromptShield's security layer. It is human-readable, version-controllable, and the only place you need to touch to change enforcement behavior.
+
+Edit `config/policy.yaml`:
+
+```yaml
+version: "1"
+
+pii:
+  EMAIL_ADDRESS:   mask    # replace with [EMAIL_ADDRESS] before the LLM sees it
+  PHONE_NUMBER:    mask
+  IP_ADDRESS:      mask
+  CREDIT_CARD:     block   # reject the request entirely — LLM never called
+  US_SSN:          block
+  IBAN_CODE:       block
+  CRYPTO:          block
+  MEDICAL_LICENSE: block
+  PERSON:          allow   # pass through unchanged
+  LOCATION:        allow
+  DATE_TIME:       allow
+  URL:             allow
+
+injection:
+  action: block            # block | allow
+                           # mask is not supported for injections — it escalates to block
+
+# fail_closed: block the request if the engine is unreachable (safe default, recommended)
+# fail_open:   allow unscanned requests through if the engine is unreachable
+on_detector_error: fail_closed
+```
+
+## PII actions
+
+| Action | Behavior |
+|--------|----------|
+| `block` | Request rejected, HTTP 403 returned. LLM is never called and zero tokens are consumed. |
+| `mask`  | Entity replaced with `[ENTITY_TYPE]` in-place. Request forwarded with the sanitized prompt. |
+| `allow` | Entity passes through unchanged. |
+
+## Injection actions
+
+`mask` is not meaningful for injection. You cannot replace "ignore previous instructions" with a placeholder and have a useful prompt. It escalates to `block` automatically.
+
+## Error handling
+
+`on_detector_error` protects you when the detection engine goes down:
+
+- **`fail_closed`** (recommended): block any request that cannot be scanned. Safer for production; you prefer a failed request over an unscanned one reaching your LLM.
+- **`fail_open`**: allow unscanned requests through. Useful during development or if uptime matters more than security guarantees.

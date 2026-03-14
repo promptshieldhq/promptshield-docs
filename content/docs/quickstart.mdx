@@ -1,0 +1,54 @@
+---
+title: Quickstart
+description: Get a working proxy in one terminal session. No engine required to start.
+---
+
+## Gateway mode (recommended starting point)
+
+No detection engine. No Python. No extra dependencies. The proxy forwards all requests while giving you rate limiting, audit logging, and provider routing out of the box.
+
+```bash
+git clone https://github.com/promptshieldhq/promptshield-proxy
+cd promptshield-proxy
+
+cp .env.example .env
+# edit .env: set PROMPTSHIELD_PROVIDER and your API key
+
+make run
+# proxy listening on :8080
+```
+
+Verify it is up:
+
+```bash
+curl -s http://localhost:8080/health
+# {"status":"ok","service":"promptshield-proxy"}
+```
+
+Send your first request:
+
+```bash
+curl -s -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Say hello"}]}'
+```
+
+That is it. Your app now has a proxy with full audit logging and rate limiting. Add the engine when you are ready for PII scanning.
+
+<Callout type="warn">
+Full PII scanning and injection blocking is coming soon in a separate detection engine. The proxy works fully without it, but you won't get the security features until it ships. Star the repo and watch for the release.
+</Callout>
+
+**3. Start the proxy:**
+
+```bash
+make run
+```
+
+With the engine running, a credit card number in a prompt returns a `403`. The LLM is never called and no tokens are consumed.
+
+## What is next
+
+- [Configure your LLM provider](/providers): Gemini, OpenAI, Ollama, and more
+- [Customize the policy](/policy): decide what gets blocked, masked, or allowed
+- [Integrate your SDK](/sdk): point `base_url` at the proxy, done

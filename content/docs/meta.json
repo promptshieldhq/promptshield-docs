@@ -1,0 +1,20 @@
+{
+  "title": "PromptShield",
+  "pages": [
+    "index",
+    "quickstart",
+    "providers",
+    "api-reference",
+    "sdk",
+    "policy",
+    "rate-limiting",
+    "response-scanning",
+    "audit-logging",
+    "metrics",
+    "grafana",
+    "tls",
+    "deployment",
+    "architecture",
+    "environment-variables"
+  ]
+}

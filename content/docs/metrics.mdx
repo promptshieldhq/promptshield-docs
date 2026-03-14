@@ -1,0 +1,10 @@
+---
+title: Prometheus Metrics
+description: PromptShield is its own exporter. No separate process. /metrics is always on, on the same port as the proxy.
+---
+
+## Do I need a separate exporter?
+
+**No.** PromptShield is its own Prometheus exporter, built directly into the proxy using the official `prometheus/client_golang` library (v1.23.2).
+
+There is no separate exporter binary to install. There is no flag to enable it. It is always on.

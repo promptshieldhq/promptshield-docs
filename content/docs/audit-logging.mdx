@@ -1,0 +1,44 @@
+---
+title: Audit Logging
+description: Every request emits a structured NDJSON line to stdout. Ship it anywhere.
+---
+
+Every request through PromptShield (whether allowed, masked, blocked, or rate-limited) produces one line of structured JSON on stdout. No configuration needed. It is always on.
+
+```json
+{
+  "request_id": "a3f1c8e2b4d09f11",
+  "timestamp": "2025-03-12T10:23:45Z",
+  "action": "mask",
+  "provider": "gemini",
+  "model": "gemini-2.0-flash",
+  "injection_detected": false,
+  "entities_detected": ["EMAIL_ADDRESS"],
+  "response_scanned": false,
+  "prompt_tokens": 28,
+  "completion_tokens": 95,
+  "total_tokens": 123,
+  "latency_ms": 812
+}
+```
+
+Each line tells you: what happened, to what request, which entities triggered it, how many tokens it cost, and how long it took. No PII ever appears in the log.
+
+**Possible `action` values:** `allow` `mask` `block` `rate_limited` `error`
+
+## Ship to any log aggregator
+
+PromptShield writes to stdout. Pipe it wherever your logs live:
+
+```bash
+# Loki + Promtail
+./bin/promptshield | promtail --stdin
+
+# AWS CloudWatch
+./bin/promptshield | aws logs put-log-events ...
+
+# Local file
+./bin/promptshield >> /var/log/promptshield/audit.ndjson
+```
+
+In production the systemd service captures stdout automatically. Use `journalctl -u promptshield -f` to tail it live.

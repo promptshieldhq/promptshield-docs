@@ -1,0 +1,35 @@
+---
+title: Rate Limiting
+description: Token-bucket rate limiting per IP or API key. Add five lines to your policy file.
+---
+
+Protect your upstream LLM quota and prevent abuse. Rate limiting uses a token bucket algorithm. Requests consume tokens and tokens refill at a steady rate.
+
+Add a `rate_limit` block to `config/policy.yaml`:
+
+```yaml
+rate_limit:
+  requests_per_minute: 60   # token refill rate
+  burst: 10                 # max tokens available at once
+  key_by: ip                # ip | api_key
+```
+
+## Key strategies
+
+**`key_by: ip`**: One bucket per client IP. Respects `X-Forwarded-For` when PromptShield is behind a reverse proxy.
+
+**`key_by: api_key`**: One bucket per API key passed in `x-llm-api-key` or `Authorization: Bearer`. Use this when your users authenticate with their own keys.
+
+## When limits are exceeded
+
+The proxy returns `HTTP 429` immediately:
+
+```json
+{"error": "rate limit exceeded"}
+```
+
+The request is logged as `action: rate_limited` in the audit log.
+
+## Disabling rate limiting
+
+Remove or comment out the entire `rate_limit` block. No rate limiting overhead is added.

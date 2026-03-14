@@ -1,0 +1,41 @@
+---
+title: Environment Variables
+description: Full reference for every variable PromptShield reads at startup.
+---
+
+Set these in your `.env` file or as real environment variables. The proxy reads them once at startup.
+
+## Core
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMPTSHIELD_PORT` | `8080` | Port the proxy listens on |
+| `PROMPTSHIELD_PROVIDER` | `gemini` | Upstream provider: `gemini` \| `openai` \| `openai-compatible` \| `selfhosted` |
+| `PROMPTSHIELD_UPSTREAM_URL` | provider default | Override the upstream LLM base URL |
+| `PROMPTSHIELD_CHAT_ROUTE` | `/v1/chat/completions` | Inbound route path on the proxy |
+| `PROMPTSHIELD_POLICY_PATH` | `config/policy.yaml` | Path to the policy file |
+
+## Model selection
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMPTSHIELD_MODEL` | — | Global model override — takes priority over everything below |
+| `PROMPTSHIELD_GEMINI_MODEL` | `gemini-2.0-flash` | Model used when provider is `gemini` |
+| `PROMPTSHIELD_OPENAI_MODEL` | `gpt-4o-mini` | Model used when provider is `openai` |
+| `PROMPTSHIELD_SELFHOSTED_MODEL` | `llama3.1:8b` | Model used when provider is `selfhosted` |
+
+## API keys
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMPTSHIELD_UPSTREAM_API_KEY` | — | Global API key fallback (any provider) |
+| `GEMINI_API_KEY` | — | Gemini API key |
+| `OPENAI_API_KEY` | — | OpenAI API key |
+| `SELFHOSTED_API_KEY` | — | Self-hosted endpoint API key (optional) |
+
+## TLS
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMPTSHIELD_TLS_CERT` | — | Path to TLS certificate (PEM). When set together with `PROMPTSHIELD_TLS_KEY`, the proxy serves HTTPS. |
+| `PROMPTSHIELD_TLS_KEY` | — | Path to TLS private key (PEM) |

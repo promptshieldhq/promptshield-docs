@@ -1,0 +1,61 @@
+---
+title: Provider Setup
+description: Route requests to Gemini, OpenAI, Ollama, or any OpenAI-compatible endpoint by setting two environment variables.
+---
+
+PromptShield speaks OpenAI's chat completions API on the inbound side and translates to whatever your upstream provider expects. Adding a new provider is one `.env` change.
+
+Set `PROMPTSHIELD_PROVIDER` and your API key. That is it.
+
+## Gemini
+
+```bash
+PROMPTSHIELD_PROVIDER=gemini
+GEMINI_API_KEY=your-gemini-key
+
+# override the model (optional):
+# PROMPTSHIELD_GEMINI_MODEL=gemini-2.0-flash
+```
+
+Default model: `gemini-2.0-flash`
+
+## OpenAI
+
+```bash
+PROMPTSHIELD_PROVIDER=openai
+OPENAI_API_KEY=your-openai-key
+
+# override the model (optional):
+# PROMPTSHIELD_OPENAI_MODEL=gpt-4o-mini
+```
+
+Default model: `gpt-4o-mini`
+
+## Ollama / self-hosted
+
+No API key needed for local models.
+
+```bash
+PROMPTSHIELD_PROVIDER=selfhosted
+PROMPTSHIELD_UPSTREAM_URL=http://localhost:11434/v1
+PROMPTSHIELD_SELFHOSTED_MODEL=llama3.1:8b
+```
+
+Default model: `llama3.1:8b`
+
+## Any OpenAI-compatible endpoint
+
+Together, Groq, Fireworks, Anyscale. If it speaks OpenAI, PromptShield speaks to it.
+
+```bash
+PROMPTSHIELD_PROVIDER=openai-compatible
+PROMPTSHIELD_UPSTREAM_URL=https://api.together.xyz/v1
+PROMPTSHIELD_UPSTREAM_API_KEY=your-key
+PROMPTSHIELD_MODEL=mistralai/Mixtral-8x7B-Instruct-v0.1
+```
+
+## Model resolution order
+
+`PROMPTSHIELD_MODEL` (global override) → provider-specific env var (`PROMPTSHIELD_GEMINI_MODEL`, etc.) → built-in default.
+
+The `model` field in the request body is always ignored. Model selection is a server-side concern in PromptShield.
