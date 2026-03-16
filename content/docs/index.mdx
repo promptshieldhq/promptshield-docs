@@ -17,7 +17,7 @@ Drop it in front of Gemini, OpenAI, Ollama, or anything OpenAI-compatible. Chang
 
 **Audit logging**: Every request writes one NDJSON line to stdout: request ID, provider, model, action, token counts, latency. No config. Always on. Pipe it to Loki, CloudWatch, or a local file.
 
-**Prometheus metrics + Grafana dashboard**: Built-in `/metrics` endpoint. A 26-panel Grafana dashboard ships in `deploy/` covering request rate, p50/p95/p99 latency, token burn by model, block rate, and error rate. No PromQL needed.
+**Prometheus metrics + Grafana dashboard**: Built-in `/metrics` endpoint. A pre-built Grafana dashboard ships in `infra/observability/` covering request rate, p50/p95/p99 latency, token burn by model, block rate, and error rate. One `docker compose up` and it's live.
 
 **Multi-provider routing**: Gemini, OpenAI, Ollama, and any OpenAI-compatible endpoint (Groq, Together, Fireworks, Anyscale). Switch providers with one env var.
 

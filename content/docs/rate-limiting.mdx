@@ -16,7 +16,7 @@ rate_limit:
 
 ## Key strategies
 
-**`key_by: ip`**: One bucket per client IP. Respects `X-Forwarded-For` when PromptShield is behind a reverse proxy.
+**`key_by: ip`**: One bucket per client IP. Reads `X-Real-IP` when behind a reverse proxy (set by nginx/Caddy to `$remote_addr`). `X-Forwarded-For` is intentionally ignored here — it can be injected by the client to bypass rate limiting.
 
 **`key_by: api_key`**: One bucket per API key passed in `x-llm-api-key` or `Authorization: Bearer`. Use this when your users authenticate with their own keys.
 

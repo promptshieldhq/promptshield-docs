@@ -15,6 +15,12 @@ Set these in your `.env` file or as real environment variables. The proxy reads 
 | `PROMPTSHIELD_CHAT_ROUTE` | `/v1/chat/completions` | Inbound route path on the proxy |
 | `PROMPTSHIELD_POLICY_PATH` | `config/policy.yaml` | Path to the policy file |
 
+## Detection engine
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PROMPTSHIELD_ENGINE_URL` | `none` | URL of the detection engine (e.g. `http://localhost:4321`). Set to `none` or leave empty to run in gateway mode with no PII scanning. |
+
 ## Model selection
 
 | Variable | Default | Description |
@@ -35,7 +41,9 @@ Set these in your `.env` file or as real environment variables. The proxy reads 
 
 ## TLS
 
+Both variables must be set together or not at all. Setting only one is a startup error.
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PROMPTSHIELD_TLS_CERT` | — | Path to TLS certificate (PEM). When set together with `PROMPTSHIELD_TLS_KEY`, the proxy serves HTTPS. |
+| `PROMPTSHIELD_TLS_CERT` | — | Path to TLS certificate (PEM) |
 | `PROMPTSHIELD_TLS_KEY` | — | Path to TLS private key (PEM) |

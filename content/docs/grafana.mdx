@@ -1,0 +1,73 @@
+---
+title: Grafana Dashboard
+description: Spin up Prometheus + Grafana with one command. The dashboard and datasource provision automatically.
+---
+
+The full observability stack lives in `infra/observability/`. One command starts Prometheus and Grafana with the PromptShield dashboard and datasource already provisioned.
+
+```bash
+cd infra/observability
+docker compose up -d
+```
+
+| Service | URL | Default credentials |
+|---------|-----|---------------------|
+| Grafana | http://localhost:3001 | `admin` / `changeme` |
+| Prometheus | http://localhost:9090 | — |
+
+Change the credentials before exposing Grafana to a network:
+
+```bash
+GF_ADMIN_USER=youruser GF_ADMIN_PASSWORD=yourpassword docker compose up -d
+```
+
+## What gets provisioned
+
+Everything is automatic. No clicking through the Grafana UI.
+
+**Datasource**: Prometheus is wired in as the default datasource pointing at `http://prometheus:9090`.
+
+**Dashboard**: The PromptShield dashboard loads immediately. It covers:
+
+- Request rate by action (allow / mask / block / error / rate_limited)
+- p50 / p95 / p99 end-to-end latency
+- Token burn rate by model and type (prompt / completion / total)
+- Block rate and error rate
+- PII entity breakdown by type (requires detection engine)
+- Injection detection rate
+
+## Alerts
+
+Five Prometheus alert rules are included in `infra/observability/grafana/alerts.yml`:
+
+| Alert | Condition | Severity |
+|-------|-----------|----------|
+| `HighBlockRate` | Block rate > 15% of requests over 5m | warning |
+| `SensitivePIIDetected` | Any `CREDIT_CARD`, `US_SSN`, or `IBAN_CODE` detected in 10m | critical |
+| `HighLatencyP95` | p95 latency > 5s for 3m | warning |
+| `ErrorRateHigh` | Error rate > 5% over 5m | critical |
+| `TokenSpikeByModel` | Any model consuming > 10,000 tokens/min for 5m | warning |
+
+Alerts fire in Prometheus. To route them to Slack, PagerDuty, or email, add an Alertmanager config alongside the docker-compose file.
+
+## How Prometheus reaches the proxy
+
+The docker-compose file uses `host.docker.internal` so Prometheus inside Docker can scrape the proxy running on your host machine. This works on Docker Desktop (Mac, Windows) and Linux with Docker Engine 20.10+.
+
+If your proxy is on a different host, edit `infra/observability/prometheus.yml` and change the target:
+
+```yaml
+scrape_configs:
+  - job_name: promptshield
+    static_configs:
+      - targets: ["your-host:8080"]
+```
+
+## Persistent Grafana data
+
+Dashboard edits and settings are stored in a named Docker volume (`grafana-data`). They survive restarts. To reset to the provisioned defaults:
+
+```bash
+docker compose down -v   # removes the volume
+docker compose up -d
+```

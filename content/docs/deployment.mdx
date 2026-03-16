@@ -18,15 +18,6 @@ sudo systemctl status promptshield
 journalctl -u promptshield -f
 ```
 
-## Detection engine (optional)
-
-The engine runs as a separate systemd service. Deploy the engine source to `/opt/promptshield-engine`, then:
-
-```bash
-sudo make install-engine
-sudo systemctl start promptshield-engine
-```
-
 ## Uninstall
 
 ```bash
@@ -38,10 +29,10 @@ sudo make uninstall
 ## Building from source
 
 ```bash
-make build     # produces bin/promptshield
-make run       # dev mode with go run
-make engine    # start the Python detection engine in dev mode
-make tidy      # go mod tidy
+make build   # produces bin/promptshield
+make run     # dev mode with go run
+make test    # go test -race ./...
+make tidy    # go mod tidy
 ```
 
-**Requirements:** Go 1.22+, Python 3.12+ with `uv` (engine only).
+**Requirements:** Go 1.22+

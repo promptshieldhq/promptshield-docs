@@ -9,17 +9,17 @@ Caddy fetches and auto-renews Let's Encrypt certificates. Zero cert management. 
 
 ```bash
 # Install Caddy: https://caddyserver.com/docs/install
-sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+sudo cp infra/caddy/Caddyfile /etc/caddy/Caddyfile
 # Edit the domain, then:
 sudo systemctl reload caddy
 ```
 
-The included `deploy/Caddyfile` sets `flush_interval -1` so SSE streaming works correctly.
+The included `infra/caddy/Caddyfile` sets `flush_interval -1` so SSE streaming works correctly.
 
 ## Option 2: nginx + certbot
 
 ```bash
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/promptshield
+sudo cp infra/nginx/nginx.conf /etc/nginx/sites-available/promptshield
 sudo ln -s /etc/nginx/sites-available/promptshield /etc/nginx/sites-enabled/promptshield
 
 # Edit the domain name, then:
@@ -28,7 +28,7 @@ sudo certbot --nginx -d your.domain.com
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-The included `deploy/nginx.conf` sets `proxy_buffering off`, which is required for SSE streaming to work.
+The included `infra/nginx/nginx.conf` sets `proxy_buffering off`, which is required for SSE streaming to work.
 
 ## Option 3: Native TLS on the proxy
 

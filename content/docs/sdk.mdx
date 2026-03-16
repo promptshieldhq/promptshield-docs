@@ -3,6 +3,73 @@ title: SDK Integration
 description: One line change. Your existing OpenAI SDK code works unchanged.
 ---
 
-PromptShield is a drop-in replacement for the OpenAI endpoint. Change `base_url`. Keep everything else. The proxy handles the rest invisibly.
+PromptShield accepts the same request format as OpenAI's `/v1/chat/completions`. Point your SDK's `base_url` at the proxy. Nothing else changes.
 
-Coming soon
+## Python
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8080/v1",
+    api_key="your-gemini-or-openai-key",  # forwarded to the upstream provider
+)
+
+response = client.chat.completions.create(
+    model="gemini-2.0-flash",  # ignored by the proxy — model is set server-side
+    messages=[{"role": "user", "content": "Hello"}],
+)
+print(response.choices[0].message.content)
+```
+
+Streaming works the same way:
+
+```python
+with client.chat.completions.stream(
+    model="gemini-2.0-flash",
+    messages=[{"role": "user", "content": "Tell me a story"}],
+) as stream:
+    for chunk in stream:
+        print(chunk.choices[0].delta.content or "", end="", flush=True)
+```
+
+## Node.js / TypeScript
+
+```typescript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "http://localhost:8080/v1",
+  apiKey: "your-gemini-or-openai-key",
+});
+
+const response = await client.chat.completions.create({
+  model: "gemini-2.0-flash",
+  messages: [{ role: "user", content: "Hello" }],
+});
+console.log(response.choices[0].message.content);
+```
+
+## Passing API keys at request time
+
+Instead of storing keys in `.env` on the proxy server, you can pass them per-request via headers. The proxy checks these before falling back to environment variables:
+
+| Header | Used for |
+|--------|----------|
+| `x-llm-api-key` | Any provider |
+| `x-gemini-api-key` | Gemini only |
+| `x-openai-api-key` | OpenAI only |
+| `Authorization: Bearer <key>` | Any provider |
+
+```python
+client = OpenAI(
+    base_url="http://localhost:8080/v1",
+    api_key="user-supplied-key",  # sent as Authorization: Bearer
+)
+```
+
+This lets you build multi-tenant apps where each user supplies their own key without storing any keys on the proxy server.
+
+## The model field is ignored
+
+PromptShield selects the model server-side via `PROMPTSHIELD_MODEL` or provider-specific model env vars. Whatever you pass in the `model` field of the request is ignored. This is intentional — model selection is a server-side concern.

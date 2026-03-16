@@ -39,14 +39,6 @@ That is it. Your app now has a proxy with full audit logging and rate limiting. 
 Full PII scanning and injection blocking is coming soon in a separate detection engine. The proxy works fully without it, but you won't get the security features until it ships. Star the repo and watch for the release.
 </Callout>
 
-**3. Start the proxy:**
-
-```bash
-make run
-```
-
-With the engine running, a credit card number in a prompt returns a `403`. The LLM is never called and no tokens are consumed.
-
 ## What is next
 
 - [Configure your LLM provider](/providers): Gemini, OpenAI, Ollama, and more

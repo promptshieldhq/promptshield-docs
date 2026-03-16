@@ -1,10 +1,60 @@
 ---
 title: Prometheus Metrics
-description: PromptShield is its own exporter. No separate process. /metrics is always on, on the same port as the proxy.
+description: PromptShield is its own exporter. No separate process. /metrics is always on, same port as the proxy.
 ---
 
-## Do I need a separate exporter?
+PromptShield is its own Prometheus exporter, built directly into the proxy using the official `prometheus/client_golang` library. There is no separate exporter binary to install. There is no flag to enable it. It is always on.
 
-**No.** PromptShield is its own Prometheus exporter, built directly into the proxy using the official `prometheus/client_golang` library (v1.23.2).
+```bash
+curl http://localhost:8080/metrics
+```
 
-There is no separate exporter binary to install. There is no flag to enable it. It is always on.
+## Metrics
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `promptshield_requests_total` | Counter | `action`, `provider`, `model` | Every request, labeled by outcome |
+| `promptshield_request_duration_seconds` | Histogram | `action`, `provider`, `model` | End-to-end latency including upstream LLM |
+| `promptshield_tokens_total` | Counter | `token_type`, `provider`, `model` | Token counts — `token_type` is `prompt`, `completion`, or `total` |
+| `promptshield_entities_detected_total` | Counter | `entity_type`, `provider` | PII entities detected (requires detection engine) |
+| `promptshield_injections_detected_total` | Counter | `provider`, `model` | Prompt injection attempts detected |
+| `promptshield_response_scans_total` | Counter | `provider`, `model` | LLM responses scanned for PII |
+
+**`action` label values:** `allow` `mask` `block` `rate_limited` `error`
+
+The duration histogram uses buckets: 50ms, 100ms, 250ms, 500ms, 1s, 2s, 5s, 10s, 30s, 60s.
+
+## Prometheus config
+
+Point Prometheus at the proxy's `/metrics` endpoint:
+
+```yaml
+scrape_configs:
+  - job_name: promptshield
+    static_configs:
+      - targets: ["localhost:8080"]
+    scrape_interval: 15s
+```
+
+The full observability stack (Prometheus + Grafana pre-configured) is in `infra/observability/`. See [Grafana](/grafana) for the one-command quickstart.
+
+## Useful PromQL
+
+```
+# Request rate by action (rps)
+rate(promptshield_requests_total[5m])
+
+# p95 end-to-end latency
+histogram_quantile(0.95, sum by (le) (rate(promptshield_request_duration_seconds_bucket[5m])))
+
+# Block rate as a percentage
+rate(promptshield_requests_total{action="block"}[5m])
+/ rate(promptshield_requests_total[5m]) * 100
+
+# Token burn rate per model (tokens/min)
+sum by (model) (rate(promptshield_tokens_total{token_type="total"}[5m])) * 60
+
+# Error rate
+rate(promptshield_requests_total{action="error"}[5m])
+/ rate(promptshield_requests_total[5m]) * 100
+```
